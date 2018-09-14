@@ -1,0 +1,34 @@
+#######################################
+# Syntax Coloring Map For CC1101 Radio
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+Radio	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+Init	KEYWORD2
+RxOn	KEYWORD2
+Idle	KEYWORD2		
+Sleep	KEYWORD2
+Wakeup	KEYWORD2
+SendData	KEYWORD2
+SendDataNoWait	KEYWORD2
+SetDataRate	KEYWORD2
+SetTxPower	KEYWORD2
+SetLogicalChannel	KEYWORD2
+SetMaxPacketLength	KEYWORD2
+GetMARCState	KEYWORD2
+CheckReceiveFlag	KEYWORD2
+ReceiveData	KEYWORD2
+GetState	KEYWORD2
+Rssi	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
