@@ -1,6 +1,16 @@
-### CC1101 Energia Library
+### CC1101 MSP430 Energia Library
 
-This library interfaces with the CC110X chips (and probably the CC2500). These are commonly found online (check eBay or Amazon) and are very useful low frequency radios. Outdoor range is in excess of one kilometer LOS. This library ahs been tested with, and works on all the FRAM series MSP430 Launchpads, specifically the MSP430FR5739, MSP430FR5969, and MSP430FR6989.
+
+#####This repository is a fork of Josiah Hester's (Jhester) CC1101 Library for MSP430 on Energia framework. Intially the library only supported the FRAM series MSP430 launchpads: EXP-MSP430FR5739, MSP430FR5969, and MSP430FR6989. Unfortunately it didn't support EXP-MSP430G2 Launchpad that incorporates MSP430G2553 MCU. So, here I have added support to MSP430G2553 MCU by modifying the pins.h file.
+
+#####Credit for the core library goes to Josiah Hester (jhester) https://github.com/jhester
+Original library by jhester: https://buffet.cs.clemson.edu/vcs/u/jhester/cc1101-energia/
+
+####Supported Launchpads/MCUs
+    EXP-MSP430G2 w/ MSP430G2553 MCU   (support added: 14th September 2018)
+    EXP-MSP430FR5739
+    EXP-MSP430FR5969
+    EXP-MSP430FR6989
 
 Use the data_rates.py script to determine your data rate register settings.
 Or use the provided table and index in the source files.
@@ -13,7 +23,7 @@ This library supports low power sleep mode (draw of 200nA).
 Download this repository to your computer using [git](https://git-scm.com/):
 
 ```
-git clone anonymous@buffet.cs.clemson.edu:jhester/cc1101-energia cc1101
+git clone https://github.com/abhra0897/MSP430-CC1101-Energia-Library.git
 ```
 
 #### Install
@@ -144,6 +154,7 @@ All methods below work, and have been tested.
 
 
 #### Changelog
+- Added support to MSP430G2553 MCU (by Avra Mitra https://github.com/abhra0897 on 14th Sep, 2018)
 - Added sleep, idle, and other functions supported by MRFI to match functionality
 - Now uses class to organize and hide private methods
 - Lists all Tx powers in table
