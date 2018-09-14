@@ -22,6 +22,18 @@ Put this folder in your Energia libraries folder. Restart Energia. Then load the
 #### Pinouts
 For each launchpad, reference [this pin description image of the CC1101](http://www.kooing.com/image/cache/data/CC1101_3-500x500.jpg). The proper orientation is with the antenna facing to your right, with the text "RF1100SE" in the correct orientation.
 
+#### MSP430G2553 MCU on EXP-MSP430G2 Launchpad Pinout
+Reference the [pinout](https://embeddedcomputing.weebly.com/uploads/1/1/6/2/11624344/4354073_orig.jpeg) for this launchpad, and the [pinout](http://www.kooing.com/image/cache/data/CC1101_3-500x500.jpg) for the CC1101.
+
+	VDD  -> VCC
+	SI   -> 14 / P1.6
+	SO   -> 15 / P1.7
+	CSn  -> 8  / P2.0
+	SCK  -> 7  / P1.5
+	GDO2 -> 5  / P1.3
+	GDO0 -> 6  / P1.4
+	GND  -> GND
+
 #### MSP430FR5739 Experimenter Pinout
 Reference the [pinout](http://energia.nu/img/LaunchPadMSP430FR5739-v1.1.jpg) for this launchpad, and the [pinout](http://www.kooing.com/image/cache/data/CC1101_3-500x500.jpg) for the CC1101.
 
