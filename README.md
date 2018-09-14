@@ -1,14 +1,14 @@
 ### CC1101 MSP430 Energia Library
 
 
-####Note
+#### Note
 This repository is a fork of Josiah Hester's (Jhester) CC1101 Library for MSP430 on Energia framework. Intially the library only supported the FRAM series MSP430 launchpads: EXP-MSP430FR5739, MSP430FR5969, and MSP430FR6989. Unfortunately it didn't support EXP-MSP430G2 Launchpad that incorporates MSP430G2553 MCU. So, here I have added support to MSP430G2553 MCU by modifying the pins.h file.
 
-#####Credit
+##### Credit
 Credit for the core library goes to Josiah Hester (jhester) https://github.com/jhester
 Original library by jhester: https://buffet.cs.clemson.edu/vcs/u/jhester/cc1101-energia/
 
-####Supported Launchpads/MCUs
+#### Supported Launchpads/MCUs
 EXP-MSP430G2 w/ MSP430G2553 MCU   (support added: 14th September 2018)
 EXP-MSP430FR5739
 EXP-MSP430FR5969
