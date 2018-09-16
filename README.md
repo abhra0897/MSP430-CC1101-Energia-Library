@@ -45,8 +45,8 @@ Reference the [pinout](https://embeddedcomputing.weebly.com/uploads/1/1/6/2/1162
 	SO   -> 15 / P1.7
 	CSn  -> 8  / P2.0
 	SCK  -> 7  / P1.5
-	GDO2 -> 5  / P1.3
-	GDO0 -> 6  / P1.4
+	GDO2 -> 10  / P2.2
+	GDO0 -> 9  / P2.1
 	GND  -> GND
 
 #### MSP430FR5739 Experimenter Pinout
@@ -159,6 +159,7 @@ All methods below work, and have been tested.
 
 
 #### Changelog
+- Changed GDO0 and GDO2 pins to free up Analog input pins and the on-board switch of MSP430G2 launchpad (16 Sep., 18)
 - Added support to MSP430G2553 MCU (by Avra Mitra https://github.com/abhra0897 on 14th Sep, 2018)
 - Added sleep, idle, and other functions supported by MRFI to match functionality
 - Now uses class to organize and hide private methods

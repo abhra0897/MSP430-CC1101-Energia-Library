@@ -7,8 +7,8 @@
  *                                      GDO0 Pin Configuration
  * ------------------------------------------------------------------------------------------------
  */
-#define GDO0_BIT__                     4  
-#define GDO0_PORT__                    1   //P1.4 as GDO0
+#define GDO0_BIT__                     1  
+#define GDO0_PORT__                    2   //P2.1 as GDO0
 #define CONFIG_GDO0_PIN_AS_INPUT()       st( INFIX( P, GDO0_PORT__, SEL ) &= ~BV(GDO0_BIT__); \
                                              INFIX( P, GDO0_PORT__, SEL2 ) &= ~BV(GDO0_BIT__);) /* clear pin special function default */
 #define GDO0_PIN_IS_HIGH()               ( INFIX( P, GDO0_PORT__, IN ) & BV(GDO0_BIT__))
@@ -28,8 +28,8 @@
  *                                      GDO2 Pin Configuration
  * ------------------------------------------------------------------------------------------------
  */
-#define GDO2_BIT__                     3
-#define GDO2_PORT__                    1  //P1.3 as GDO2
+#define GDO2_BIT__                     2
+#define GDO2_PORT__                    2  //P2.2 as GDO2
 #define CONFIG_GDO2_PIN_AS_INPUT()       st( INFIX( P, GDO2_PORT__, SEL ) &= ~BV(GDO2_BIT__); \
                                              INFIX( P, GDO2_PORT__, SEL2 ) &= ~BV(GDO2_BIT__);) /* clear pin special function default */
 #define GDO2_PIN_IS_HIGH()               ( INFIX( P, GDO2_PORT__, IN ) & BV(GDO2_BIT__))
