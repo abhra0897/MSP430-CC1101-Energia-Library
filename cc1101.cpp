@@ -16,9 +16,10 @@
 
 uint8_t PaTabel[8] = {0xC0 ,0xC0 ,0xC0 ,0xC0 ,0xC0 ,0xC0 ,0xC0 ,0xC0};
 
+//defaults:
 uint8_t mrfiRadioState = 0;
-uint8_t rfPowerNdx = 0;
-uint8_t dataRateNdx = 9;
+uint8_t rfPowerNdx = 0;         //0 is 10 dBm
+uint8_t dataRateNdx = 9;        //9 is 1.16 kbaud
 uint8_t frequencyNdx = 0;       //0 is 433 MHz (433.92), 1 is 868.3 MHz
 uint8_t packetLength = 61;
 
@@ -481,6 +482,7 @@ void CC1101Radio::SetDataRate(uint8_t rate_ndx) {
 	}
 }
 
+//Sets the carrier frequency and then sets the power
 void CC1101Radio::SetFrequency(uint8_t freq_ndx) {
 	frequencyNdx = freq_ndx;
 	RxModeOff();
@@ -499,12 +501,12 @@ void CC1101Radio::SetFrequency(uint8_t freq_ndx) {
 void CC1101Radio::SetTxPower(uint8_t powrset) {
 	rfPowerNdx = powrset;
 	RxModeOff();
-	if(frequencyNdx == 1)        //if 433mhz freq is selected
+	if(frequencyNdx == 0)        //if 433mhz freq is selected
 	{
 		for(uint8_t i=0;i<8;i++)
 			PaTabel[i] = rfPowerTable_433MHz[powrset];
 	}
-	else if(frequencyNdx == 2)   //if 868mhz freq is selected
+	else if(frequencyNdx == 1)   //if 868mhz freq is selected
 	{
 		for(uint8_t i=0;i<8;i++)
 			PaTabel[i] = rfPowerTable_868MHz[powrset];
