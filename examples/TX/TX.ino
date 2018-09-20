@@ -14,7 +14,8 @@ void setup()
   Radio.Init();
   Radio.SetDataRate(4); // Needs to be the same in Tx and Rx
   Radio.SetLogicalChannel(1); // Needs to be the same as receiver
-  Radio.SetTxPower(0);
+  Radio.SetTxPower(0);     //10 dBm set
+  Radio.SetFrequency(0);    //433 MHz  (RX TX must be same)
   for(i=0;i<sizetx;i++)
   {
      TX_buffer[i]=0;
