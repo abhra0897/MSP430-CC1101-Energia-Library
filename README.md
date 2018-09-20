@@ -14,7 +14,9 @@ Credit for the core library goes to Josiah Hester (jhester) https://github.com/j
 Original library by jhester: https://buffet.cs.clemson.edu/vcs/u/jhester/cc1101-energia/
 
 #### Supported Frequencies
-- 433 MHz  (Supports only 433MHz for now)
+- 433 MHz (default)
+- 868 MHz
+More to come. Hold tight.
 
 #### Supported Launchpads/MCUs
 - EXP-MSP430G2 w/ MSP430G2x53 or MSP430G2x13 MCU   (support added: 14th September 2018)
@@ -143,7 +145,8 @@ All methods below work, and have been tested.
 
 	// Set radio frequency from the available options
 	// freq_ndx=0 -- 433 MHz
-        // freq_ndx=1 -- 868 MHz
+	// freq_ndx=1 -- 868 MHz
+	If SetFrequency() is not called, 433MHz is default frequency
 	void SetFrequency(uint8_t freq_ndx);
 
 	// Set the channel to transmit on, RX and TX must be on same channel
