@@ -19,9 +19,10 @@ uint8_t PaTabel[8] = {0xC0 ,0xC0 ,0xC0 ,0xC0 ,0xC0 ,0xC0 ,0xC0 ,0xC0};
 uint8_t mrfiRadioState = 0;
 uint8_t rfPowerNdx = 0;
 uint8_t dataRateNdx = 9;
+uint8_t frequencyNdx = 0;       //0 is 433 MHz (433.92), 1 is 868.3 MHz
 uint8_t packetLength = 61;
 
-static const uint8_t rfPowerTable[] = {
+static const uint8_t rfPowerTable_433MHz[] = {
 	/* 10 dBm */	0xC0, // 29.1 mA
 	/* 7 dBm */		0xC8, // 24.2 mA
 	/* 5 dBm */		0x84, // 19.4 mA
@@ -30,6 +31,17 @@ static const uint8_t rfPowerTable[] = {
 	/* -15 dBm */	0x1D, // 13.1 mA
 	/* -20 dBm */	0x0E, // 12.4 mA
 	/* -30 dBm */	0x12, // 11.9 mA
+};
+
+static const uint8_t rfPowerTable_868MHz[] = {
+	/* 10 dBm */	0xC2, // 29.1 mA
+	/* 7 dBm */		0xCB, // 24.2 mA
+	/* 5 dBm */		0x81, // 19.4 mA
+	/* 0 dBm */		0x50, // 15.9 mA
+	/* -10 dBm */	0x27, // 14.4 mA
+	/* -15 dBm */	0x1E, // 13.1 mA
+	/* -20 dBm */	0x0F, // 12.4 mA
+	/* -30 dBm */	0x03, // 11.9 mA
 };
 
 /** If clocking in a lot of data over SPI bus, clock speed of MCU needs to be higher */
@@ -61,6 +73,21 @@ static const uint8_t rate_MDMCFG4[] = {
 	0x86, //   2.322 kBaud
 	0x85, //   1.161 kBaud
 	0x85  //   0.969 kBaud
+};
+
+static const uint8_t frequency_FREQ2[] = {
+	0x10, // 433 MHz
+	0x21, // 868.3 MHz	
+};
+
+static const uint8_t frequency_FREQ1[] = {
+	0xA7, // 433 MHz (0xB0 if 433.92 assumed)
+	0x65, // 868.3 MHz
+};
+
+static const uint8_t frequency_FREQ0[] = {
+	0x62, // 433 MHz   (0x72 if 433.92 assumed)
+	0x6A, // 868.3 MHz
 };
 
 #define __mrfi_NUM_LOGICAL_CHANS__      25
@@ -311,9 +338,9 @@ void CC1101Radio::RegConfigSettings(void)
 {
     SpiWriteReg(CC1101_FSCTRL1,  0x08);
     SpiWriteReg(CC1101_FSCTRL0,  0x00);
-    SpiWriteReg(CC1101_FREQ2,    0x10);
-    SpiWriteReg(CC1101_FREQ1,    0xA7);
-    SpiWriteReg(CC1101_FREQ0,    0x62);
+    SpiWriteReg(CC1101_FREQ2,    frequency_FREQ2[frequencyNdx]);
+    SpiWriteReg(CC1101_FREQ1,    frequency_FREQ1[frequencyNdx]);
+    SpiWriteReg(CC1101_FREQ0,    frequency_FREQ0[frequencyNdx]);
     SpiWriteReg(CC1101_MDMCFG4,  rate_MDMCFG4[dataRateNdx]); // CHANBW_E[1:0], CHANBW_M[1:0], DRATE_E[3:0], Reset is B10001100, 0x56 is 1.5kBaud, 0x55 is around 0.6kBaud
     SpiWriteReg(CC1101_MDMCFG3,  rate_MDMCFG3[dataRateNdx]); // DRATE_M[7:0], Reset is 0x22, 0x00 with above setting is 1.5kBaud
     SpiWriteReg(CC1101_MDMCFG2,  0x03);
@@ -340,7 +367,7 @@ void CC1101Radio::RegConfigSettings(void)
     SpiWriteReg(CC1101_IOCFG2,   0x0B); 	//serial clock.synchronous to the data in synchronous serial mode
     SpiWriteReg(CC1101_IOCFG0,   0x06);  	//asserts when sync word has been sent/received, and de-asserts at the end of the packet 
     SpiWriteReg(CC1101_PKTCTRL1, 0x04);		//two status uint8_ts will be appended to the payload of the packet,including RSSI LQI and CRC OK, no address check
-    SpiWriteReg(CC1101_PKTCTRL0, 0x05);		//whitening off;CRC Enable£»fixed length packets set by PKTLEN reg
+    SpiWriteReg(CC1101_PKTCTRL0, 0x05);		//whitening off;CRC Enableï¿½ï¿½fixed length packets set by PKTLEN reg
     SpiWriteReg(CC1101_ADDR,     0x00);		//address used for packet filtration.
     SpiWriteReg(CC1101_PKTLEN,   0x3D); 	//61 uint8_ts max length
 }
@@ -454,12 +481,34 @@ void CC1101Radio::SetDataRate(uint8_t rate_ndx) {
 	}
 }
 
+void CC1101Radio::SetFrequency(uint8_t freq_ndx) {
+	frequencyNdx = freq_ndx;
+	RxModeOff();
+	SpiWriteReg(CC1101_FREQ2,    frequency_FREQ2[frequencyNdx]);
+    SpiWriteReg(CC1101_FREQ1,    frequency_FREQ1[frequencyNdx]);
+    SpiWriteReg(CC1101_FREQ0,    frequency_FREQ0[frequencyNdx]);
+	//Power must be adjusted after frequency is changed
+	SetTxPower(rfPowerNdx);
+	
+	//if(mrfiRadioState == RADIO_STATE_RX) {
+	//	RxOn();
+	//}
+}
+
 // Sets ALL harmonics to the same power, which could be undesirable
 void CC1101Radio::SetTxPower(uint8_t powrset) {
 	rfPowerNdx = powrset;
 	RxModeOff();
-	for(uint8_t i=0;i<8;i++)
-		PaTabel[i] = rfPowerTable[powrset];
+	if(frequencyNdx == 1)        //if 433mhz freq is selected
+	{
+		for(uint8_t i=0;i<8;i++)
+			PaTabel[i] = rfPowerTable_433MHz[powrset];
+	}
+	else if(frequencyNdx == 2)   //if 868mhz freq is selected
+	{
+		for(uint8_t i=0;i<8;i++)
+			PaTabel[i] = rfPowerTable_868MHz[powrset];
+	}
 	SpiWriteBurstReg(CC1101_PATABLE,PaTabel,8);		//CC1101 PATABLE config
 	if(mrfiRadioState == RADIO_STATE_RX) {
 		RxOn();

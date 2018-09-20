@@ -42,6 +42,7 @@ class CC1101Radio {
 		void SendData(uint8_t *txBuffer, uint8_t size);
 		void SendDataNoWait(uint8_t *txBuffer, uint8_t size);		
 		void SetDataRate(uint8_t rate_ndx);
+		void SetFrequency(uint8_t freq_ndx);
 		void SetTxPower(uint8_t powrset_ndx);
 		void SetLogicalChannel(uint8_t channel);
 		void SetMaxPacketLength(uint8_t pkt_length);
