@@ -16,6 +16,7 @@ Original library by jhester: https://buffet.cs.clemson.edu/vcs/u/jhester/cc1101-
 #### Supported Frequencies
 - 433 MHz (default)
 - 868 MHz
+
 More to come. Hold tight.
 
 #### Supported Launchpads/MCUs
@@ -178,6 +179,7 @@ I am working on this lib to add support for all the frequncies. I hope more upda
 The MIT License (MIT)
 
 Copyright (c) 2018 Avra Mitra
+
 Copyright (c) 2015 Josiah Hester
 
 Permission is hereby granted, free of charge, to any person obtaining a copy

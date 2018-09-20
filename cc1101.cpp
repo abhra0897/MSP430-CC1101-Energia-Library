@@ -487,8 +487,8 @@ void CC1101Radio::SetFrequency(uint8_t freq_ndx) {
 	frequencyNdx = freq_ndx;
 	RxModeOff();
 	SpiWriteReg(CC1101_FREQ2,    frequency_FREQ2[frequencyNdx]);
-    SpiWriteReg(CC1101_FREQ1,    frequency_FREQ1[frequencyNdx]);
-    SpiWriteReg(CC1101_FREQ0,    frequency_FREQ0[frequencyNdx]);
+	SpiWriteReg(CC1101_FREQ1,    frequency_FREQ1[frequencyNdx]);
+	SpiWriteReg(CC1101_FREQ0,    frequency_FREQ0[frequencyNdx]);
 	//Power must be adjusted after frequency is changed
 	SetTxPower(rfPowerNdx);
 	
