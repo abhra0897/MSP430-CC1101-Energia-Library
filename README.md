@@ -16,8 +16,7 @@ Original library by jhester: https://buffet.cs.clemson.edu/vcs/u/jhester/cc1101-
 #### Supported Frequencies
 - 433 MHz (default)
 - 868 MHz
-
-More to come. Hold tight.
+- More to come. Hold tight.
 
 #### Supported Launchpads/MCUs
 - EXP-MSP430G2 w/ MSP430G2x53 or MSP430G2x13 MCU   (support added: 14th September 2018)
