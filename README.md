@@ -1,8 +1,8 @@
 ### CC1101 MSP430 Energia Library
 
-- (last updated: 16th September, 2018)
+- (last updated: 20th September, 2018)
 
-- (What's new: see "changelog" at the bottom)
+- (What's new: Added 868MHz support. see "changelog.md" file)
 
 #### Note
 This repository is a fork of Josiah Hester's (Jhester) CC1101 Library for MSP430 on Energia framework. Initially the library only supported the FRAM series MSP430 launchpads: EXP-MSP430FR5739, MSP430FR5969, and MSP430FR6989. Unfortunately it didn't support EXP-MSP430G2 Launchpad that incorporates MSP430G2553 MCU. So, here I have added support to MSP430G2553 MCU  by modifying the pins.h file. It should also work with any MSP430G2x53 and MSP430G2x13 MCU.
@@ -131,15 +131,20 @@ All methods below work, and have been tested.
 
 
 	// Set the transmit power from builtin settings
-	/* powrset_ndx=0 -- 10 dBm */	0xC0, // 29.1 mA
-	/* powrset_ndx=1 -- 7 dBm */		0xC8, // 24.2 mA
-	/* powrset_ndx=2 -- 5 dBm */		0x84, // 19.4 mA
-	/* powrset_ndx=3 -- 0 dBm */		0x60, // 15.9 mA
-	/* powrset_ndx=4 -- -10 dBm */	0x34, // 14.4 mA
-	/* powrset_ndx=5 -- -15 dBm */	0x1D, // 13.1 mA
-	/* powrset_ndx=6 -- -20 dBm */	0x0E, // 12.4 mA
-	/* powrset_ndx=7 -- -30 dBm */	0x12, // 11.9 mA
+	/* powrset_ndx=0 -- 10 dBm */	 // 29.1 mA
+	/* powrset_ndx=1 -- 7 dBm */	 // 24.2 mA
+	/* powrset_ndx=2 -- 5 dBm */     // 19.4 mA
+	/* powrset_ndx=3 -- 0 dBm */     // 15.9 mA
+	/* powrset_ndx=4 -- -10 dBm */	 // 14.4 mA
+	/* powrset_ndx=5 -- -15 dBm */	 // 13.1 mA
+	/* powrset_ndx=6 -- -20 dBm */	 // 12.4 mA
+	/* powrset_ndx=7 -- -30 dBm */	 // 11.9 mA
 	void SetTxPower(uint8_t powrset_ndx);
+
+	// Set radio frequency from the available options
+	// freq_ndx=0 -- 433 MHz
+        // freq_ndx=1 -- 868 MHz
+	void SetFrequency(uint8_t freq_ndx);
 
 	// Set the channel to transmit on, RX and TX must be on same channel
 	void SetLogicalChannel(uint8_t channel);
@@ -163,19 +168,13 @@ All methods below work, and have been tested.
 	// Gets the received signal strength indicator
 	int8_t Rssi(void);
 
-
-#### Changelog
-- Changed GDO0 and GDO2 pins to free up Analog input pins and the on-board switch of MSP430G2 launchpad (16 Sep., 18)
-- Added support to MSP430G2553 MCU (by Avra Mitra https://github.com/abhra0897 on 14th Sep, 2018)
-- Added sleep, idle, and other functions supported by MRFI to match functionality
-- Now uses class to organize and hide private methods
-- Lists all Tx powers in table
-- Made tool for determining data rates from registers and registers from target data rates
-
+#### To do
+I am working on this lib to add support for all the frequncies. I hope more updates are coming soon.
 
 #### License
 The MIT License (MIT)
 
+Copyright (c) 2018 Avra Mitra
 Copyright (c) 2015 Josiah Hester
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
