@@ -8,7 +8,7 @@
 #include "pins.h"
 
 /* Debug output enable/disable */
-#define DEBUG_TRUE           0           //DEBUG_TRUE  0 disables debug output on serial monitor
+#define DEBUG_TRUE           1           //DEBUG_TRUE  0 disables debug output on serial monitor
 #define DEBUG_PRINT(x)                   if (DEBUG_TRUE) {Serial.print("[DEBUG] "); Serial.println(x);}
 
 /* Helper functions */
