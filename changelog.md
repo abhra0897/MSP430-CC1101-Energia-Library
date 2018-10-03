@@ -1,5 +1,11 @@
 ### Changes by me (abhra0897)
 
+#### Oct 03, 2018
+
+- Removed a bug that was sometimes causing infinite loop while writing to CC1101 registers through SPI bus.
+- Bug details: "while(SO_IS_HIGH());" is causing infinite loop sometimes, hence they are commented out some places. Maybe adding pull down resistor to SO (MISO) will solve it? 
+- Added debug print option. It's enabled by default. Do DEBUG_TRUE 0 at cc1101.h to disable. DEBUG_PRINT helps to identify problem if program crashes anywhere.
+
 #### Sep 20, 2018
 
 - Added support for 868 MHz ISM band.
