@@ -78,17 +78,17 @@ static const uint8_t rate_MDMCFG4[] = {
 
 static const uint8_t frequency_FREQ2[] = {
 	0x10, // 433 MHz
-	0x21, // 868.3 MHz	
+	0x21 // 868.3 MHz	
 };
 
 static const uint8_t frequency_FREQ1[] = {
 	0xA7, // 433 MHz (0xB0 if 433.92 assumed)
-	0x65, // 868.3 MHz
+	0x65 // 868.3 MHz
 };
 
 static const uint8_t frequency_FREQ0[] = {
 	0x62, // 433 MHz   (0x72 if 433.92 assumed)
-	0x6A, // 868.3 MHz
+	0x6A // 868.3 MHz
 };
 
 #define __mrfi_NUM_LOGICAL_CHANS__      25
@@ -166,15 +166,23 @@ void CC1101Radio::GDO_Set (void)
 ****************************************************************/
 void CC1101Radio::Reset (void)
 {
+	DEBUG_PRINT("----- START Reset -----");
 	SPI_DRIVE_CSN_LOW();
+	DEBUG_PRINT("csn is set low..");
 	delay(1);
 	SPI_DRIVE_CSN_HIGH();
+	DEBUG_PRINT("csn is set high..");
 	delay(4);
 	SPI_DRIVE_CSN_LOW();
+	DEBUG_PRINT("csn is set low..");
 	while (SPI_SO_IS_HIGH());
+	DEBUG_PRINT("SO is low");
 	SpiTransfer(CC1101_SRES);
 	while (SPI_SO_IS_HIGH());
+	DEBUG_PRINT("csn is set low..");
 	SPI_DRIVE_CSN_HIGH();
+	DEBUG_PRINT("csn is set high..");
+	DEBUG_PRINT("----- STOP Reset -----");
 }
 
 /****************************************************************
@@ -185,12 +193,20 @@ void CC1101Radio::Reset (void)
 ****************************************************************/
 void CC1101Radio::Init(void)
 {
+	DEBUG_PRINT("----- START Init -----");
 	SpiInit();										//spi initialization
+	DEBUG_PRINT("SpiInit complete..");
 	GDO_Set();										//GDO set
+	DEBUG_PRINT("GDO set complete..");
 	Reset();										//CC1101 reset
+	DEBUG_PRINT("Reset complete..");
 	RegConfigSettings();							//CC1101 register config
+	DEBUG_PRINT("RegConfigSettings complete..");
 	SpiWriteBurstReg(CC1101_PATABLE,PaTabel,8);		//CC1101 PATABLE config
+	DEBUG_PRINT("SpiWriteBurstReg CC1101_PATABLE complete..");
 	mrfiRadioState = RADIO_STATE_IDLE;
+	DEBUG_PRINT("mrfiRadioState = RADIO_STATE_IDLE...");
+	DEBUG_PRINT("----- STOP Init -----");
 }
 
 
@@ -203,7 +219,7 @@ void CC1101Radio::Init(void)
 void CC1101Radio::SpiWriteReg(uint8_t addr, uint8_t value)
 {
 	SPI_DRIVE_CSN_LOW();
-	while (SPI_SO_IS_HIGH());
+	//while (SPI_SO_IS_HIGH());    //Falling in infinite loop often, so commented out it ################
 	SpiTransfer(addr);
 	SpiTransfer(value);
 	SPI_DRIVE_CSN_HIGH();
@@ -223,7 +239,7 @@ void CC1101Radio::SpiWriteBurstReg(uint8_t addr, uint8_t *buffer, uint8_t num)
 	SPI_TURN_CHIP_SELECT_OFF();
 	SPI_TURN_CHIP_SELECT_ON();
 	
-	while (SPI_SO_IS_HIGH());
+	//while (SPI_SO_IS_HIGH());    //Falling in infinite loop often, so commented out it ####################
 	SpiTransfer(temp);
 	for (i = 0; i < num; i++)
 	{
@@ -241,7 +257,7 @@ void CC1101Radio::SpiWriteBurstReg(uint8_t addr, uint8_t *buffer, uint8_t num)
 uint8_t CC1101Radio::SpiStrobe(uint8_t strobe)
 {
 	SPI_TURN_CHIP_SELECT_ON();
-	while (SPI_SO_IS_HIGH());
+	//while (SPI_SO_IS_HIGH());  //Falling in infinite loop often, so commented out it
 	uint8_t statusByte = SpiTransfer(strobe);
 	SPI_TURN_CHIP_SELECT_OFF();
 	return statusByte;
@@ -337,15 +353,16 @@ uint8_t CC1101Radio::SpiReadStatus(uint8_t addr)
 ****************************************************************/
 void CC1101Radio::RegConfigSettings(void) 
 {
-    SpiWriteReg(CC1101_FSCTRL1,  0x08);
+	DEBUG_PRINT("----- START RegConfigSettings -----");
+	SpiWriteReg(CC1101_FSCTRL1,  0x08);
     SpiWriteReg(CC1101_FSCTRL0,  0x00);
     SpiWriteReg(CC1101_FREQ2,    frequency_FREQ2[frequencyNdx]);
     SpiWriteReg(CC1101_FREQ1,    frequency_FREQ1[frequencyNdx]);
     SpiWriteReg(CC1101_FREQ0,    frequency_FREQ0[frequencyNdx]);
     SpiWriteReg(CC1101_MDMCFG4,  rate_MDMCFG4[dataRateNdx]); // CHANBW_E[1:0], CHANBW_M[1:0], DRATE_E[3:0], Reset is B10001100, 0x56 is 1.5kBaud, 0x55 is around 0.6kBaud
-    SpiWriteReg(CC1101_MDMCFG3,  rate_MDMCFG3[dataRateNdx]); // DRATE_M[7:0], Reset is 0x22, 0x00 with above setting is 1.5kBaud
-    SpiWriteReg(CC1101_MDMCFG2,  0x03);
-    SpiWriteReg(CC1101_MDMCFG1,  0x22);
+	SpiWriteReg(CC1101_MDMCFG3,  rate_MDMCFG3[dataRateNdx]); // DRATE_M[7:0], Reset is 0x22, 0x00 with above setting is 1.5kBaud
+	SpiWriteReg(CC1101_MDMCFG2,  0x03);
+	SpiWriteReg(CC1101_MDMCFG1,  0x22);
     SpiWriteReg(CC1101_MDMCFG0,  0xF8);
     SpiWriteReg(CC1101_CHANNR,   0x00);
     SpiWriteReg(CC1101_DEVIATN,  0x47);
@@ -371,6 +388,8 @@ void CC1101Radio::RegConfigSettings(void)
     SpiWriteReg(CC1101_PKTCTRL0, 0x05);		//whitening off;CRC Enable��fixed length packets set by PKTLEN reg
     SpiWriteReg(CC1101_ADDR,     0x00);		//address used for packet filtration.
     SpiWriteReg(CC1101_PKTLEN,   0x3D); 	//61 uint8_ts max length
+	DEBUG_PRINT("All config registers are written..");
+	DEBUG_PRINT("----- STOP RegConfigSettings -----");
 }
 
 /****************************************************************
@@ -381,12 +400,15 @@ void CC1101Radio::RegConfigSettings(void)
 ****************************************************************/
 void CC1101Radio::SendData(uint8_t *txBuffer,uint8_t size)
 {
+	DEBUG_PRINT("----- START SendData -----");
 	SpiWriteReg(CC1101_TXFIFO,size); // Send size first in variable length mode (always be in var length mode)
 	SpiWriteBurstReg(CC1101_TXFIFO,txBuffer,size);			//write data to send
+	DEBUG_PRINT("Registers are written. Now to send data..");
 	SpiStrobe(CC1101_STX);									//start send	
 	while (!GDO0_PIN_IS_HIGH());
 	while (GDO0_PIN_IS_HIGH());	
 	SpiStrobe(CC1101_SFTX);									//flush TXfifo
+	DEBUG_PRINT("----- STOP SendData -----");
 }
 
 /****************************************************************
@@ -397,11 +419,14 @@ void CC1101Radio::SendData(uint8_t *txBuffer,uint8_t size)
 ****************************************************************/
 void CC1101Radio::SendDataNoWait(uint8_t *txBuffer,uint8_t size)
 {
+	DEBUG_PRINT("----- START SendDataNoWait -----");
 	SpiWriteReg(CC1101_TXFIFO,size); // Send size first in variable length mode (always be in var length mode)
 	SpiWriteBurstReg(CC1101_TXFIFO,txBuffer,size);			//write data to send
+	DEBUG_PRINT("Registers are written. Now to send data..");
 	SpiStrobe(CC1101_STX);									//start send	
 	__delay_cycles(1000);
 	SpiStrobe(CC1101_SFTX);									//flush TXfifo
+	DEBUG_PRINT("----- STOP SendDataNoWait -----");
 }
 
 /****************************************************************
@@ -412,8 +437,12 @@ void CC1101Radio::SendDataNoWait(uint8_t *txBuffer,uint8_t size)
 ****************************************************************/
 void CC1101Radio::RxOn(void)
 {
+	DEBUG_PRINT("----- START RxOn -----");
 	SpiStrobe(CC1101_SRX);
 	mrfiRadioState = RADIO_STATE_RX;
+	DEBUG_PRINT("Radio state rx..");
+	DEBUG_PRINT("----- STOP RxOn -----");
+
 }
 
 /****************************************************************
@@ -444,17 +473,21 @@ uint8_t CC1101Radio::CheckReceiveFlag(void)
 ****************************************************************/
 uint8_t CC1101Radio::ReceiveData(uint8_t *rxBuffer)
 {
+	DEBUG_PRINT("----- START ReceiveData -----");
 	uint8_t size;
 	uint8_t status[2];
 
 	if(SpiReadStatus(CC1101_RXBYTES) & BYTES_IN_RXFIFO)
 	{
+		DEBUG_PRINT("Data available. Reading..");
 		size=SpiReadReg(CC1101_RXFIFO);
 		SpiReadBurstReg(CC1101_RXFIFO,rxBuffer,size);
 		SpiReadBurstReg(CC1101_RXFIFO,status,2);
 		SpiStrobe(CC1101_SFRX);
 		//RxOn(); // ???? I this bad????
 		mrfiRadioState = RADIO_STATE_IDLE;
+		DEBUG_PRINT("Radio state IDLE..");
+		DEBUG_PRINT("----- STOP ReceiveData -----");
 		return size;
 	}
 	else
@@ -462,6 +495,8 @@ uint8_t CC1101Radio::ReceiveData(uint8_t *rxBuffer)
 		SpiStrobe(CC1101_SFRX);
 		//RxOn(); // ???? I this bad????
 		mrfiRadioState = RADIO_STATE_IDLE;
+		DEBUG_PRINT("Radio state IDLE..");
+		DEBUG_PRINT("----- STOP ReceiveData -----");
 		return 0;
 	}
 }
@@ -473,34 +508,49 @@ uint8_t CC1101Radio::ReceiveData(uint8_t *rxBuffer)
 * OUTPUT       :none
 ****************************************************************/
 void CC1101Radio::SetDataRate(uint8_t rate_ndx) {
+	DEBUG_PRINT("----- START SetDataRate -----");
 	dataRateNdx = rate_ndx;
 	RxModeOff();
+	DEBUG_PRINT("Rxmode is turned off..");
 	SpiWriteReg(CC1101_MDMCFG4, rate_MDMCFG4[rate_ndx]);
+	DEBUG_PRINT("MDMCFG4 is written..");
 	SpiWriteReg(CC1101_MDMCFG3, rate_MDMCFG3[rate_ndx]);
+	DEBUG_PRINT("MDMCFG3 is written..");
 	if(mrfiRadioState == RADIO_STATE_RX) {
 		RxOn();
+		DEBUG_PRINT("Rxmode is turned on..");
 	}
+	DEBUG_PRINT("----- STOP SetDataRate -----");
 }
 
 //Sets the carrier frequency and then sets the power
 void CC1101Radio::SetFrequency(uint8_t freq_ndx) {
+	DEBUG_PRINT("----- START SetFrequency -----");
 	frequencyNdx = freq_ndx;
 	RxModeOff();
+	DEBUG_PRINT("Rxmode is turned off..");
 	SpiWriteReg(CC1101_FREQ2,    frequency_FREQ2[frequencyNdx]);
+	DEBUG_PRINT("FREQ2 register is written..");
 	SpiWriteReg(CC1101_FREQ1,    frequency_FREQ1[frequencyNdx]);
+	DEBUG_PRINT("FREQ1 register is written..");
 	SpiWriteReg(CC1101_FREQ0,    frequency_FREQ0[frequencyNdx]);
+	DEBUG_PRINT("FREQ0 register is written..");
 	//Power must be adjusted after frequency is changed
 	SetTxPower(rfPowerNdx);
+	DEBUG_PRINT("rf power is set after setting frequency..");
 	
 	//if(mrfiRadioState == RADIO_STATE_RX) {
 	//	RxOn();
 	//}
+	DEBUG_PRINT("----- STOP SetFrequency -----");
 }
 
 // Sets ALL harmonics to the same power, which could be undesirable
 void CC1101Radio::SetTxPower(uint8_t powrset) {
+	DEBUG_PRINT("----- START SetTxPower -----");
 	rfPowerNdx = powrset;
 	RxModeOff();
+	DEBUG_PRINT("Rxmode is turned off..");
 	if(frequencyNdx == 0)        //if 433mhz freq is selected
 	{
 		for(uint8_t i=0;i<8;i++)
@@ -512,9 +562,12 @@ void CC1101Radio::SetTxPower(uint8_t powrset) {
 			PaTabel[i] = rfPowerTable_868MHz[powrset];
 	}
 	SpiWriteBurstReg(CC1101_PATABLE,PaTabel,8);		//CC1101 PATABLE config
+	DEBUG_PRINT("PATABLE registers are written..");
 	if(mrfiRadioState == RADIO_STATE_RX) {
 		RxOn();
+		DEBUG_PRINT("Rxmode is turned on..");
 	}
+	DEBUG_PRINT("----- STOP SetTxPower -----");
 }
 
 // This idles but does not change here
@@ -527,9 +580,13 @@ void CC1101Radio::RxModeOff() {
 // Idle mode probably should be avoided, as 1mA draw
 // Only voltage regulator to digital part and crystal oscillator running 
 void CC1101Radio::Idle() {
+	DEBUG_PRINT("----- START Idle -----");
 	//if(mrfiRadioState == RADIO_STATE_RX) {
 		RxModeOff();
 		mrfiRadioState = RADIO_STATE_IDLE;
+		DEBUG_PRINT("Radio state idle..");
+		DEBUG_PRINT("----- STOP Idle -----");
+
 	//}
 }
 
@@ -537,26 +594,35 @@ void CC1101Radio::Idle() {
 // All GDO pins programmed to 0x2F (HW to 0)
 // Lowest power state for radio, should draw ~200nA
 void CC1101Radio::Sleep() {
+	DEBUG_PRINT("----- START Sleep -----");
 	Idle();
 	delay(1);
 	SpiStrobe(CC1101_SPWD);	
 	mrfiRadioState = RADIO_STATE_OFF;
+	DEBUG_PRINT("Radio state off..");
+	DEBUG_PRINT("----- STOP Sleep -----");
 }
 
 void CC1101Radio::Wakeup() {
+	DEBUG_PRINT("----- START Wakeup -----");
 	/* if radio is already awake, just ignore wakeup request */
 	if(mrfiRadioState != RADIO_STATE_OFF) {
+		DEBUG_PRINT("Alreaady awake..");
+		DEBUG_PRINT("----- STOP Wakeup -----");
 		return;
 	}
 	
     /* drive CSn low to initiate wakeup */
     SPI_DRIVE_CSN_LOW();
+	DEBUG_PRINT("csn is set low..");
 
     /* wait for MISO to go high indicating the oscillator is stable */
     while (SPI_SO_IS_HIGH());
+	DEBUG_PRINT("SO is low..");
 
     /* wakeup is complete, drive CSn high and continue */
     SPI_DRIVE_CSN_HIGH();
+	DEBUG_PRINT("csn is set high..");
 	
 	/*
 	*  The test registers must be restored after sleep for the CC1100 and CC2500 radios.
@@ -570,6 +636,8 @@ void CC1101Radio::Wakeup() {
 
 	 /* enter idle mode */
 	 mrfiRadioState = RADIO_STATE_IDLE;
+	 DEBUG_PRINT("Radio state idle..");
+	 DEBUG_PRINT("----- STOP Wakeup -----");
 }
 
 uint8_t CC1101Radio::GetState() {
@@ -577,29 +645,44 @@ uint8_t CC1101Radio::GetState() {
 }
 
 uint8_t CC1101Radio::GetMARCState() {
+	DEBUG_PRINT("----- START GetMARCState -----");
 	//return	SpiReadReg(CC1101_MARCSTATE);
 	//return SpiStrobe(0xF5);
+	DEBUG_PRINT("----- STOP GetMARCState {calls SpiReadStatusReg() after this line} -----");
 	return SpiReadStatusReg(CC1101_MARCSTATE) & 0x1F;
 }
 
 void CC1101Radio::SetLogicalChannel(uint8_t channel) {
+	DEBUG_PRINT("----- START SetLogicalChannel -----");
     /* logical channel is not valid? */
-   if (channel >= __mrfi_NUM_LOGICAL_CHANS__) return;
+   if (channel >= __mrfi_NUM_LOGICAL_CHANS__) 
+   {
+	   DEBUG_PRINT("Invalid channlel..");
+	   DEBUG_PRINT("----- STOP SetLogicalChannel -----");
+	   return;
+   }
 
     /* make sure radio is off before changing channels */
     RxModeOff();
+	DEBUG_PRINT("Rx mode is set off..");
 	
 	SpiWriteReg(CC1101_CHANNR, mrfiLogicalChanTable[channel]);
+	DEBUG_PRINT("CHANNR register is written..");
     /* turn radio back on if it was on before channel change */
 	
 	if(mrfiRadioState == RADIO_STATE_RX) {
 		RxOn();
+		DEBUG_PRINT("Rx is turned on..");
 	}
+	DEBUG_PRINT("----- STOP SetLogicalChannel -----");
 }
 
 void CC1101Radio::SetMaxPacketLength(uint8_t pkt_length) {
+	DEBUG_PRINT("----- START SetMaxPacketLength -----");
 	packetLength = pkt_length;
 	SpiWriteReg(CC1101_PKTLEN, pkt_length);
+	DEBUG_PRINT("PKTLEN register is written..");
+	DEBUG_PRINT("----- STOP SetMaxPacketLength -----");
 }
 
 CC1101Radio Radio;
