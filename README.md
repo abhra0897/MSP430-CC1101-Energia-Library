@@ -1,8 +1,8 @@
 ### CC1101 MSP430 Energia Library
 
-- (last updated: 20th September, 2018)
+- (last updated: 3rd October, 2018)
 
-- (What's new: Added 868MHz support. see "changelog.md" file)
+- (What's new: Removed a bug and Added DEBUG_PRINT. see "changelog.md" file)
 
 #### Note
 This repository is a fork of Josiah Hester's (Jhester) CC1101 Library for MSP430 on Energia framework. Initially the library only supported the FRAM series MSP430 launchpads: EXP-MSP430FR5739, MSP430FR5969, and MSP430FR6989. Unfortunately it didn't support EXP-MSP430G2 Launchpad that incorporates MSP430G2553 MCU. So, here I have added support to MSP430G2553 MCU  by modifying the pins.h file. It should also work with any MSP430G2x53 and MSP430G2x13 MCU.
@@ -96,6 +96,17 @@ Reference the [pinout](http://energia.nu/img/LaunchPadMSP430FR5739-v1.1.jpg) for
 #### API
 All methods below work, and have been tested.
 
+	//Enable or disable debug output to serial terminal
+	//Go to cc1101.h to modify
+	#define DEBUG_TRUE 1    /*debug output enabled by default*/
+	#define DEBUG_TRUE 0    /*This will disable it*/
+	Debug output starts and ends with the function name. Example:
+	
+	[DEBUG] ----- START functionName -----
+	[DEBUG] Any action done in the function..
+	[DEBUG] ----- STOP functionName -----
+	
+	
 	// Initialize pins, set default registers for CC1101
 	void Init(void);
 
@@ -172,6 +183,9 @@ All methods below work, and have been tested.
 	int8_t Rssi(void);
 
 #### To do
+"while(SO_IS_HIGH());" is causing infinite loop sometimes, hence they are commented out some places. 
+Maybe adding pull down resistor to SO (MISO) will solve it? 
+
 I am working on this lib to add support for all the frequncies. I hope more updates are coming soon.
 
 #### License
