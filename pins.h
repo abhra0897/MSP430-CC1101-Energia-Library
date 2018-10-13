@@ -71,6 +71,7 @@
 /* SO Pin Configuration */
 #define SPI_SO_GPIO_BIT__              7    //P1.7 as SOMI
 #define SPI_CONFIG_SO_PIN_AS_INPUT()     st( P1DIR &= ~BV(SPI_SO_GPIO_BIT__);)
+#define SPI_CONFIG_SO_PIN_PULLUPDWN()    st( P1REN |= BV(SPI_SO_GPIO_BIT__); P1OUT |=  BV(SPI_SO_GPIO_BIT__);)  //I/P PULLUP/DWN ADDED FOR TEST
 #define SPI_SO_IS_HIGH()                 ( P1IN & BV(SPI_SO_GPIO_BIT__) )
 
 /* SPI Port Configuration */
@@ -81,6 +82,15 @@
                                              BV(SPI_SO_GPIO_BIT__)            | \
                                              BV(SPI_SCLK_GPIO_BIT__);)
 
+/* Release 1.7 or SO pin from SPI and set as GPIO */
+/* Turns out, reading SO pin level (high or low) is not working if it's special function is selected */
+#define SPI_SO_RELEASE_SPI()                 st( P1SEL &= ~BV(SPI_SO_GPIO_BIT__);    \
+                                             P1SEL2 &= ~BV(SPI_SO_GPIO_BIT__);)
+
+/* SET 1.7 or SO pin as SPI pin */
+#define SPI_SO_SET_SPI()                 st( P1SEL |= BV(SPI_SO_GPIO_BIT__);    \
+                                             P1SEL2 |= BV(SPI_SO_GPIO_BIT__);)
+                                             
 #define SPI_INIT() \
 st ( \
   UCB0CTL1 |= UCSWRST;                           \
@@ -98,7 +108,11 @@ st ( \
                                           while(!(IFG2 & UCB0TXIFG)); /*while txbuf is not empty, wait*/\
                                           UCB0TXBUF = x; \
                                           )
+
+//#define SPI_WRITE_BYTE(x)                st( IFG2 &= ~UCB0TXIFG;  UCB0TXBUF = x; )  //Only for testing!!!!!!!!!!
+
 #define SPI_READ_BYTE()                  UCB0RXBUF
+
 //while rxbuf is empty, wait
 #define SPI_WAIT_DONE()                  while(!(IFG2 & UCB0RXIFG));
 
