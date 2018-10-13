@@ -1,5 +1,10 @@
 ### Changes by me (abhra0897)
 
+#### Oct 13, 2018
+
+- MSP430G2553 couldn't read MISO pin level properly and that caused the bug stated in Oct 03 update. It's solved without commenting out the lines.
+- Method: For MSP430G2553, P1.7 is set as normal GPIO before reading it's level. And set back as MISO before SPI operation. New macros are added in pins.h.
+
 #### Oct 03, 2018
 
 - Removed a bug that was sometimes causing infinite loop while writing to CC1101 registers through SPI bus.
