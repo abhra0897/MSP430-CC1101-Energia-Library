@@ -1,8 +1,8 @@
 ### CC1101 MSP430 Energia Library
 
-- (last updated: 3rd October, 2018)
+- (last updated: 13th October, 2018)
 
-- (What's new: Removed a bug and Added DEBUG_PRINT. see "changelog.md" file)
+- (What's new: MSP430G2553's P1.7 couldn't read its level when set as MISO. It's solved in this update .see "changelog.md" file)
 
 #### Note
 This repository is a fork of Josiah Hester's (Jhester) CC1101 Library for MSP430 on Energia framework. Initially the library only supported the FRAM series MSP430 launchpads: EXP-MSP430FR5739, MSP430FR5969, and MSP430FR6989. Unfortunately it didn't support EXP-MSP430G2 Launchpad that incorporates MSP430G2553 MCU. So, here I have added support to MSP430G2553 MCU  by modifying the pins.h file. It should also work with any MSP430G2x53 and MSP430G2x13 MCU.
@@ -53,7 +53,7 @@ Reference the [pinout](https://embeddedcomputing.weebly.com/uploads/1/1/6/2/1162
 	SO   -> 15 / P1.7
 	CSn  -> 8  / P2.0
 	SCK  -> 7  / P1.5
-	GDO2 -> 10  / P2.2
+	GDO2 -> 10  / P2.2   //Unused
 	GDO0 -> 9  / P2.1
 	GND  -> GND
 
