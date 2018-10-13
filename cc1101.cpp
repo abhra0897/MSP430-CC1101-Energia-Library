@@ -77,17 +77,19 @@ static const uint8_t rate_MDMCFG4[] = {
 };
 
 static const uint8_t frequency_FREQ2[] = {
-	0x10, // 433 MHz
+	0x10, // 433 (433.92) MHz
 	0x21 // 868.3 MHz	
 };
 
 static const uint8_t frequency_FREQ1[] = {
-	0xA7, // 433 MHz (0xB0 if 433.92 assumed)
+	//0xA7, // 433 MHz (0xB0 if 433.92 assumed)
+	0xB0,
 	0x65 // 868.3 MHz
 };
 
 static const uint8_t frequency_FREQ0[] = {
-	0x62, // 433 MHz   (0x72 if 433.92 assumed)
+	//0x62, // 433 MHz   (0x72 if 433.92 assumed)
+	0x72,
 	0x6A // 868.3 MHz
 };
 
@@ -113,10 +115,12 @@ void CC1101Radio::SpiInit(void)
 	// initialize the SPI pins
 	
     /* configure all SPI related pins */
-    SPI_CONFIG_CSN_PIN_AS_OUTPUT();
+    SPI_DRIVE_CSN_HIGH();
+	SPI_CONFIG_CSN_PIN_AS_OUTPUT();
     SPI_CONFIG_SCLK_PIN_AS_OUTPUT();
     SPI_CONFIG_SI_PIN_AS_OUTPUT();
     SPI_CONFIG_SO_PIN_AS_INPUT();
+	//SPI_CONFIG_SO_PIN_PULLUPDWN();  //I/P PULLUP/DWN ADDED FOR TEST ###################################################
 
     /* set CSn to default high level */
     SPI_DRIVE_CSN_HIGH();
@@ -141,6 +145,8 @@ uint8_t CC1101Radio::SpiTransfer(uint8_t value)
 
 	/* read the readio status uint8_t returned by the command strobe */
 	statusByte = SPI_READ_BYTE();
+	//DEBUG_PRINT("**********status byte**********")
+	//DEBUG_PRINT(statusByte);
 	//debug_stats[debug_index] = statusByte;
 	//debug_index++;
 	return statusByte;
@@ -155,7 +161,7 @@ uint8_t CC1101Radio::SpiTransfer(uint8_t value)
 void CC1101Radio::GDO_Set (void)
 {
 	CONFIG_GDO0_PIN_AS_INPUT();
-	CONFIG_GDO2_PIN_AS_INPUT();
+	CONFIG_GDO2_PIN_AS_INPUT();    //GD02 is not used throughout the code. You can swap GDO0 and GDO2 by swapping CC1101_IOCFG0 and CC1101_IOCFG2 addr values.
 }
 
 /****************************************************************
@@ -167,19 +173,32 @@ void CC1101Radio::GDO_Set (void)
 void CC1101Radio::Reset (void)
 {
 	DEBUG_PRINT("----- START Reset -----");
+	SPI_SO_RELEASE_SPI();        //Set SO as GPIO to read level high/low
+	
 	SPI_DRIVE_CSN_LOW();
 	DEBUG_PRINT("csn is set low..");
+	
 	delay(1);
+	
 	SPI_DRIVE_CSN_HIGH();
 	DEBUG_PRINT("csn is set high..");
+	
 	delay(4);
+	
 	SPI_DRIVE_CSN_LOW();
 	DEBUG_PRINT("csn is set low..");
+	
 	while (SPI_SO_IS_HIGH());
 	DEBUG_PRINT("SO is low");
+	
+	SPI_SO_SET_SPI();            //Set SO for SPI again
 	SpiTransfer(CC1101_SRES);
+	
+	SPI_SO_RELEASE_SPI();        //Set SO as GPIO to read level high/low
 	while (SPI_SO_IS_HIGH());
-	DEBUG_PRINT("csn is set low..");
+	DEBUG_PRINT("SO is low..");
+	
+	SPI_SO_SET_SPI();            //Set SO for SPI again
 	SPI_DRIVE_CSN_HIGH();
 	DEBUG_PRINT("csn is set high..");
 	DEBUG_PRINT("----- STOP Reset -----");
@@ -218,8 +237,10 @@ void CC1101Radio::Init(void)
 ****************************************************************/
 void CC1101Radio::SpiWriteReg(uint8_t addr, uint8_t value)
 {
+	SPI_SO_RELEASE_SPI();        //Set SO as GPIO to read level high/low
 	SPI_DRIVE_CSN_LOW();
-	//while (SPI_SO_IS_HIGH());    //Falling in infinite loop often, so commented out it ################
+	while (SPI_SO_IS_HIGH());    //Falling in infinite loop often, so commented out it ##############################
+	SPI_SO_SET_SPI();            //Set SO for SPI again
 	SpiTransfer(addr);
 	SpiTransfer(value);
 	SPI_DRIVE_CSN_HIGH();
@@ -236,16 +257,18 @@ void CC1101Radio::SpiWriteBurstReg(uint8_t addr, uint8_t *buffer, uint8_t num)
 	uint8_t i, temp;
 	temp = addr | WRITE_BURST;
 	
-	SPI_TURN_CHIP_SELECT_OFF();
-	SPI_TURN_CHIP_SELECT_ON();
+	SPI_SO_RELEASE_SPI();        //Set SO as GPIO to read level high/low
+	SPI_DRIVE_CSN_HIGH();
+	SPI_DRIVE_CSN_LOW();
 	
-	//while (SPI_SO_IS_HIGH());    //Falling in infinite loop often, so commented out it ####################
+	while (SPI_SO_IS_HIGH());    //Falling in infinite loop often, so commented out it ################################
+	SPI_SO_SET_SPI();            //Set SO for SPI again
 	SpiTransfer(temp);
 	for (i = 0; i < num; i++)
 	{
 	    SpiTransfer(buffer[i]);
 	}
-	SPI_TURN_CHIP_SELECT_OFF();
+	SPI_DRIVE_CSN_HIGH();
 }
 
 /****************************************************************
@@ -256,10 +279,13 @@ void CC1101Radio::SpiWriteBurstReg(uint8_t addr, uint8_t *buffer, uint8_t num)
 ****************************************************************/
 uint8_t CC1101Radio::SpiStrobe(uint8_t strobe)
 {
-	SPI_TURN_CHIP_SELECT_ON();
-	//while (SPI_SO_IS_HIGH());  //Falling in infinite loop often, so commented out it
+	SPI_SO_RELEASE_SPI();        //Set SO as GPIO to read level high/low
+	SPI_DRIVE_CSN_LOW();
+	while (SPI_SO_IS_HIGH());  //Falling in infinite loop often, so commented out it ###################################
+	SPI_SO_SET_SPI();            //Set SO for SPI again
+	DEBUG_PRINT("Starting to transfer strobe..");
 	uint8_t statusByte = SpiTransfer(strobe);
-	SPI_TURN_CHIP_SELECT_OFF();
+	SPI_DRIVE_CSN_HIGH();
 	return statusByte;
 }
 
@@ -274,8 +300,10 @@ uint8_t CC1101Radio::SpiReadReg(uint8_t addr)
 	uint8_t temp, value;
 
     temp = addr|READ_SINGLE;
+	SPI_SO_RELEASE_SPI();        //Set SO as GPIO to read level high/low
 	SPI_DRIVE_CSN_LOW();
 	while (SPI_SO_IS_HIGH());
+	SPI_SO_SET_SPI();            //Set SO for SPI again
 	SpiTransfer(temp);
 	value=SpiTransfer(0);
 	SPI_DRIVE_CSN_HIGH();
@@ -295,8 +323,10 @@ uint8_t CC1101Radio::SpiReadStatusReg(uint8_t addr)
 	uint8_t temp, value;
 
     temp = addr|READ_BURST;
+	SPI_SO_RELEASE_SPI();        //Set SO as GPIO to read level high/low
 	SPI_DRIVE_CSN_LOW();
 	while (SPI_SO_IS_HIGH());
+	SPI_SO_SET_SPI();            //Set SO for SPI again
 	SpiTransfer(temp);
 	value=SpiTransfer(0);
 	SPI_DRIVE_CSN_HIGH();
@@ -315,8 +345,10 @@ void CC1101Radio::SpiReadBurstReg(uint8_t addr, uint8_t *buffer, uint8_t num)
 	uint8_t i,temp;
 
 	temp = addr | READ_BURST;
+	SPI_SO_RELEASE_SPI();        //Set SO as GPIO to read level high/low
 	SPI_DRIVE_CSN_LOW();
 	while (SPI_SO_IS_HIGH());
+	SPI_SO_SET_SPI();            //Set SO for SPI again
 	SpiTransfer(temp);
 	for(i=0;i<num;i++)
 	{
@@ -336,8 +368,10 @@ uint8_t CC1101Radio::SpiReadStatus(uint8_t addr)
 	uint8_t value,temp;
 
 	temp = addr | READ_BURST;
+	SPI_SO_RELEASE_SPI();        //Set SO as GPIO to read level high/low
 	SPI_DRIVE_CSN_LOW();
 	while (SPI_SO_IS_HIGH());
+	SPI_SO_SET_SPI();            //Set SO for SPI again
 	SpiTransfer(temp);
 	value=SpiTransfer(0);
 	SPI_DRIVE_CSN_HIGH();
@@ -354,40 +388,114 @@ uint8_t CC1101Radio::SpiReadStatus(uint8_t addr)
 void CC1101Radio::RegConfigSettings(void) 
 {
 	DEBUG_PRINT("----- START RegConfigSettings -----");
+	
+	DEBUG_PRINT("writig CC1101_FSCTRL1,  0x08..");
 	SpiWriteReg(CC1101_FSCTRL1,  0x08);
+	
+	DEBUG_PRINT("writing CC1101_FSCTRL0,  0x00..");
     SpiWriteReg(CC1101_FSCTRL0,  0x00);
+	
+	DEBUG_PRINT("writing CC1101_FREQ2..");
     SpiWriteReg(CC1101_FREQ2,    frequency_FREQ2[frequencyNdx]);
+	
+	DEBUG_PRINT("writing CC1101_FREQ1..");
     SpiWriteReg(CC1101_FREQ1,    frequency_FREQ1[frequencyNdx]);
+	
+	DEBUG_PRINT("writing CC1101_FREQ0..");
     SpiWriteReg(CC1101_FREQ0,    frequency_FREQ0[frequencyNdx]);
+	
+	DEBUG_PRINT("writing CC1101_MDMCFG4..");
     SpiWriteReg(CC1101_MDMCFG4,  rate_MDMCFG4[dataRateNdx]); // CHANBW_E[1:0], CHANBW_M[1:0], DRATE_E[3:0], Reset is B10001100, 0x56 is 1.5kBaud, 0x55 is around 0.6kBaud
+	
+	DEBUG_PRINT("writing CC1101_MDMCFG3..");
 	SpiWriteReg(CC1101_MDMCFG3,  rate_MDMCFG3[dataRateNdx]); // DRATE_M[7:0], Reset is 0x22, 0x00 with above setting is 1.5kBaud
-	SpiWriteReg(CC1101_MDMCFG2,  0x03);
+	
+	DEBUG_PRINT("writing CC1101_MDMCFG2..");
+	SpiWriteReg(CC1101_MDMCFG2,  0x03);            //2-FSK FOR 0x03 originally.. set 39 for ook for test #########################
+	
+	DEBUG_PRINT("writing CC1101_MDMCFG1..");
 	SpiWriteReg(CC1101_MDMCFG1,  0x22);
-    SpiWriteReg(CC1101_MDMCFG0,  0xF8);
-    SpiWriteReg(CC1101_CHANNR,   0x00);
-    SpiWriteReg(CC1101_DEVIATN,  0x47);
-    SpiWriteReg(CC1101_FREND1,   0xB6);
-    SpiWriteReg(CC1101_FREND0,   0x10);
-    SpiWriteReg(CC1101_MCSM0 ,   0x18);
-    SpiWriteReg(CC1101_FOCCFG,   0x1D);
-    SpiWriteReg(CC1101_BSCFG,    0x1C);
-    SpiWriteReg(CC1101_AGCCTRL2, 0xC7);
+    
+	DEBUG_PRINT("writing CC1101_MDMCFG0..");
+	SpiWriteReg(CC1101_MDMCFG0,  0xF8);
+    
+	//SpiWriteReg(CC1101_SYNC1,    0x05);         //sync wrd high  (for test)  ##################################################
+	//SpiWriteReg(CC1101_SYNC0,    0x04);         //sync wrd low  (for test)
+	
+	DEBUG_PRINT("writing CC1101_CHANNR,   0x00..");
+	SpiWriteReg(CC1101_CHANNR,   0x00);
+    
+	DEBUG_PRINT("writing CC1101_DEVIATN,  0x47..");
+	SpiWriteReg(CC1101_DEVIATN,  0x47);
+    
+	DEBUG_PRINT("writing CC1101_FREND1,   0xB6..");
+	SpiWriteReg(CC1101_FREND1,   0xB6);
+    
+	DEBUG_PRINT("writing CC1101_FREND0,   0x10..");
+	SpiWriteReg(CC1101_FREND0,   0x10);
+    
+	DEBUG_PRINT("writing CC1101_MCSM0 ,   0x18..");
+	SpiWriteReg(CC1101_MCSM0 ,   0x18);
+    
+	DEBUG_PRINT("writing CC1101_FOCCFG,   0x1D..");
+	SpiWriteReg(CC1101_FOCCFG,   0x1D);
+    
+	DEBUG_PRINT("writing CC1101_BSCFG,    0x1C..");
+	SpiWriteReg(CC1101_BSCFG,    0x1C);
+    
+	DEBUG_PRINT("writing CC1101_AGCCTRL2, 0xC7..");
+	SpiWriteReg(CC1101_AGCCTRL2, 0xC7);
+	
+	DEBUG_PRINT("writing CC1101_AGCCTRL1, 0x00..");
 	SpiWriteReg(CC1101_AGCCTRL1, 0x00);
-    SpiWriteReg(CC1101_AGCCTRL0, 0xB2);
-    SpiWriteReg(CC1101_FSCAL3,   0xEA);
+    
+	DEBUG_PRINT("writing CC1101_AGCCTRL0, 0xB2..");
+	SpiWriteReg(CC1101_AGCCTRL0, 0xB2);
+    
+	DEBUG_PRINT("writing CC1101_FSCAL3,   0xEA..");
+	SpiWriteReg(CC1101_FSCAL3,   0xEA);
+	
+	DEBUG_PRINT("writing CC1101_FSCAL2,   0x2A..");
 	SpiWriteReg(CC1101_FSCAL2,   0x2A);
+	
+	DEBUG_PRINT("writing CC1101_FSCAL1,   0x00..");
 	SpiWriteReg(CC1101_FSCAL1,   0x00);
-    SpiWriteReg(CC1101_FSCAL0,   0x11);
-    SpiWriteReg(CC1101_FSTEST,   0x59);
-    SpiWriteReg(CC1101_TEST2,    0x81);
-    SpiWriteReg(CC1101_TEST1,    0x35);
-    SpiWriteReg(CC1101_TEST0,    0x09);
-    SpiWriteReg(CC1101_IOCFG2,   0x0B); 	//serial clock.synchronous to the data in synchronous serial mode
-    SpiWriteReg(CC1101_IOCFG0,   0x06);  	//asserts when sync word has been sent/received, and de-asserts at the end of the packet 
-    SpiWriteReg(CC1101_PKTCTRL1, 0x04);		//two status uint8_ts will be appended to the payload of the packet,including RSSI LQI and CRC OK, no address check
-    SpiWriteReg(CC1101_PKTCTRL0, 0x05);		//whitening off;CRC Enable��fixed length packets set by PKTLEN reg
-    SpiWriteReg(CC1101_ADDR,     0x00);		//address used for packet filtration.
-    SpiWriteReg(CC1101_PKTLEN,   0x3D); 	//61 uint8_ts max length
+	
+	DEBUG_PRINT("writing CC1101_FSCAL0,   0x11..");
+	SpiWriteReg(CC1101_FSCAL0,   0x11);
+    
+	DEBUG_PRINT("writing CC1101_FSTEST,   0x59..");
+	SpiWriteReg(CC1101_FSTEST,   0x59);
+	
+	DEBUG_PRINT("writing CC1101_TEST2,    0x81..");
+	SpiWriteReg(CC1101_TEST2,    0x81);
+    
+	DEBUG_PRINT("writing CC1101_TEST1,    0x35..");
+	SpiWriteReg(CC1101_TEST1,    0x35);
+    
+	DEBUG_PRINT("writing CC1101_TEST0,    0x09..");
+	SpiWriteReg(CC1101_TEST0,    0x09);
+    
+	DEBUG_PRINT("writing CC1101_IOCFG2,   0x0B..");
+	SpiWriteReg(CC1101_IOCFG2,   0x0B); 	//serial clock.synchronous to the data in synchronous serial mode
+    
+	DEBUG_PRINT("writing CC1101_IOCFG1,   0x2E..");
+	SpiWriteReg(CC1101_IOCFG1,   0x2E);     //TRI STATE so pin
+	
+	DEBUG_PRINT("writing CC1101_IOCFG0,   0x06..");
+	SpiWriteReg(CC1101_IOCFG0,   0x06);  	//asserts when sync word has been sent/received, and de-asserts at the end of the packet 
+    
+	DEBUG_PRINT("writing CC1101_PKTCTRL1, 0x04..");
+	SpiWriteReg(CC1101_PKTCTRL1, 0x04);		//two status uint8_ts will be appended to the payload of the packet,including RSSI LQI and CRC OK, no address check
+    
+	DEBUG_PRINT("writing CC1101_PKTCTRL0, 0x05..");
+	SpiWriteReg(CC1101_PKTCTRL0, 0x05);		//whitening off;CRC Enable, variable length packets. max len set by PKTLEN reg
+    
+	DEBUG_PRINT("writing CC1101_ADDR,     0x00..");
+	SpiWriteReg(CC1101_ADDR,     0x00);		//address used for packet filtration.
+    
+	DEBUG_PRINT("writing CC1101_PKTLEN,   0x3D..");
+	SpiWriteReg(CC1101_PKTLEN,   0x3D); 	//61 uint8_ts max length
 	DEBUG_PRINT("All config registers are written..");
 	DEBUG_PRINT("----- STOP RegConfigSettings -----");
 }
@@ -453,13 +561,19 @@ void CC1101Radio::RxOn(void)
 ****************************************************************/
 uint8_t CC1101Radio::CheckReceiveFlag(void)
 {
+	DEBUG_PRINT("----- START CheckReceiveFlag -----");
 	if(GDO0_PIN_IS_HIGH())			//receive data
 	{
+		DEBUG_PRINT("GDO0 is high..");
 		while (GDO0_PIN_IS_HIGH());
+		DEBUG_PRINT("GDO0 is now low. Return 1..")
+		DEBUG_PRINT("----- STOP CheckReceiveFlag -----");
 		return 1;
 	}
 	else							// no data
 	{
+		DEBUG_PRINT("GDO0 is not high. No data. Return 0..")
+		DEBUG_PRINT("----- STOP CheckReceiveFlag -----");
 		return 0;
 	}
 }
@@ -476,10 +590,10 @@ uint8_t CC1101Radio::ReceiveData(uint8_t *rxBuffer)
 	DEBUG_PRINT("----- START ReceiveData -----");
 	uint8_t size;
 	uint8_t status[2];
-
-	if(SpiReadStatus(CC1101_RXBYTES) & BYTES_IN_RXFIFO)
+	uint8_t RX_BYTES = SpiReadStatus(CC1101_RXBYTES);
+	if(RX_BYTES & BYTES_IN_RXFIFO/* && !(RX_BYTES & 0x80)*/)   //new change #############################
 	{
-		DEBUG_PRINT("Data available. Reading..");
+		//DEBUG_PRINT("Data available. Reading..");
 		size=SpiReadReg(CC1101_RXFIFO);
 		SpiReadBurstReg(CC1101_RXFIFO,rxBuffer,size);
 		SpiReadBurstReg(CC1101_RXFIFO,status,2);
@@ -612,15 +726,17 @@ void CC1101Radio::Wakeup() {
 		return;
 	}
 	
-    /* drive CSn low to initiate wakeup */
+    SPI_SO_RELEASE_SPI();        //Set SO as GPIO to read level high/low
+	/* drive CSn low to initiate wakeup */
     SPI_DRIVE_CSN_LOW();
 	DEBUG_PRINT("csn is set low..");
 
     /* wait for MISO to go high indicating the oscillator is stable */
     while (SPI_SO_IS_HIGH());
 	DEBUG_PRINT("SO is low..");
-
-    /* wakeup is complete, drive CSn high and continue */
+	SPI_SO_SET_SPI();            //Set SO for SPI again
+    
+	/* wakeup is complete, drive CSn high and continue */
     SPI_DRIVE_CSN_HIGH();
 	DEBUG_PRINT("csn is set high..");
 	
