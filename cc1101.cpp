@@ -140,13 +140,14 @@ uint8_t CC1101Radio::SpiTransfer(uint8_t value)
 {
 	uint8_t statusByte;
 	/* send the command strobe, wait for SPI access to complete */
+	
 	SPI_WRITE_BYTE(value);
 	SPI_WAIT_DONE();
 
 	/* read the readio status uint8_t returned by the command strobe */
 	statusByte = SPI_READ_BYTE();
-	//DEBUG_PRINT("**********status byte**********")
-	//DEBUG_PRINT(statusByte);
+	DEBUG_PRINT("**********status byte**********")
+	DEBUG_PRINT(statusByte);
 	//debug_stats[debug_index] = statusByte;
 	//debug_index++;
 	return statusByte;

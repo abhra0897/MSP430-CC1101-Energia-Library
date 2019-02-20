@@ -63,13 +63,13 @@
 #define SPI_DRIVE_SCLK_LOW()             st( P1OUT &= ~BV(SPI_SCLK_GPIO_BIT__); )
 
 /* SI Pin Configuration */
-#define SPI_SI_GPIO_BIT__              6    //P1.6 as SIMO
+#define SPI_SI_GPIO_BIT__              7    //P1.7 as SIMO
 #define SPI_CONFIG_SI_PIN_AS_OUTPUT()    st( P1DIR |=  BV(SPI_SI_GPIO_BIT__); )
 #define SPI_DRIVE_SI_HIGH()              st( P1OUT |=  BV(SPI_SI_GPIO_BIT__); )
 #define SPI_DRIVE_SI_LOW()               st( P1OUT &= ~BV(SPI_SI_GPIO_BIT__); )
 
 /* SO Pin Configuration */
-#define SPI_SO_GPIO_BIT__              7    //P1.7 as SOMI
+#define SPI_SO_GPIO_BIT__              6    //P1.6 as SOMI
 #define SPI_CONFIG_SO_PIN_AS_INPUT()     st( P1DIR &= ~BV(SPI_SO_GPIO_BIT__);)
 #define SPI_CONFIG_SO_PIN_PULLUPDWN()    st( P1REN |= BV(SPI_SO_GPIO_BIT__); P1OUT |=  BV(SPI_SO_GPIO_BIT__);)  //I/P PULLUP/DWN ADDED FOR TEST
 #define SPI_SO_IS_HIGH()                 ( P1IN & BV(SPI_SO_GPIO_BIT__) )
@@ -87,7 +87,7 @@
 #define SPI_SO_RELEASE_SPI()                 st( P1SEL &= ~BV(SPI_SO_GPIO_BIT__);    \
                                              P1SEL2 &= ~BV(SPI_SO_GPIO_BIT__);)
 
-/* SET 1.7 or SO pin as SPI pin */
+/* SET 1.6 or SO pin as SPI pin */
 #define SPI_SO_SET_SPI()                 st( P1SEL |= BV(SPI_SO_GPIO_BIT__);    \
                                              P1SEL2 |= BV(SPI_SO_GPIO_BIT__);)
                                              

@@ -1,3 +1,5 @@
+## This version is discontinued. A newer and better version (v2) is available. Please use the newer library. (https://github.com/abhra0897/msp430_cc1101_energia_v2)
+
 ### CC1101 MSP430 Energia Library
 
 - (last updated: 13th October, 2018)
